@@ -1,4 +1,4 @@
-Great observation! Handling data boundaries (earliest and latest available dates) is important for a smooth charting experience. Here's a plan to address this:
+Great observation! Handling data boundaries (earliest and latest available dates) is important for a smooth charting experience. Here’s a plan to address this:
 Plan for Handling Data Boundaries
 1. Expose Data Boundaries from FastAPI
 Add an endpoint (e.g., /api/ohlcv/bounds/{symbol}) that returns:
@@ -9,7 +9,6 @@ Add an endpoint (e.g., /api/ohlcv/bounds/{symbol}) that returns:
     "latest": "2024-06-13"
   }
 '''
-
 
 Apply to app.ts
 earliest: The first available date for the symbol.
@@ -25,6 +24,13 @@ Example Implementation Steps
 FastAPI Side
 Add a new endpoint:
 
+'''
+@app.get('/api/ohlcv/bounds/{symbol}')
+def get_bounds(symbol: str):
+    # Logic to determine earliest and latest dates for the symbol
+    return {"earliest": "2020-01-01", "latest": (datetime.utcnow() - timedelta(days=1)).strftime('%Y-%m-%d')}
+'''
+
 Apply to app.ts
 Frontend Side (TypeScript)
 Add a method in CustomFastAPIDatafeed to fetch and cache boundaries.
@@ -32,4 +38,4 @@ In getHistoryKLineData, clamp the from and to dates.
 Next Steps
 Would you like a code example for the frontend logic to fetch and use these boundaries?
 Do you want to handle the FastAPI endpoint yourself, or need a code snippet for that as well?
-Let me know how you'd like to proceed!
+Let me know how you’d like to proceed!
