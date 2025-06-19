@@ -48,17 +48,23 @@ export class CustomFastAPIDatafeed implements Datafeed {
                    `start_date=${startDate}&end_date=${endDate}&` +
                    `timeframe=${timeframe}&source_resolution=1Y`;
 
+        console.log('Fetching data from:', url); // Debug log
         const response = await this.fetchWithAuth(url);
+        console.log('Response data first item:', response.data[0]); // Debug log
         
         // Transform the FastAPI response format to KLineData format
-        return response.data.map(([timestamp, open, high, low, close, volume]: number[]) => ({
-            timestamp,
-            open,
-            high,
-            low,
-            close,
-            volume
-        }));
+        return response.data.map(([timestamp, open, high, low, close, volume]: number[]) => {
+            const dataPoint = {
+                timestamp: timestamp * 1000, // Convert seconds to milliseconds
+                open,
+                high,
+                low,
+                close,
+                volume
+            };
+            console.log('Transformed data point:', dataPoint); // Debug log
+            return dataPoint;
+        });
     }
 
     // No-op implementations for real-time methods as they're not needed
