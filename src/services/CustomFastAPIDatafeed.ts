@@ -1,5 +1,6 @@
 import { KLineData } from 'klinecharts';
 import { Datafeed, SymbolInfo, Period, DatafeedSubscribeCallback } from '@klinecharts/pro';
+import { supabase } from './supabase';
 
 interface CacheEntry {
     data: KLineData[];
@@ -13,21 +14,18 @@ interface CacheConfig {
 }
 
 /**
- * Custom Datafeed implementation for FastAPI backend with caching
+ * Custom Datafeed implementation for FastAPI backend with caching and Supabase auth
  */
 export class CustomFastAPIDatafeed implements Datafeed {
     private readonly baseUrl: string;
-    private readonly token: string;
     private cache: Map<string, CacheEntry> = new Map();
     private readonly cacheConfig: CacheConfig;
     
     constructor(
         baseUrl: string, 
-        token: string, 
         config: Partial<CacheConfig> = {}
     ) {
         this.baseUrl = baseUrl;
-        this.token = token;
         this.cacheConfig = {
             maxEntries: config.maxEntries || 100, // Default max cache entries
             expirationTime: config.expirationTime || 5 * 60 * 1000, // Default 5 minutes
@@ -96,15 +94,56 @@ export class CustomFastAPIDatafeed implements Datafeed {
         }
     }
 
+    private async getAuthToken(): Promise<string | null> {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            return session?.access_token || null;
+        } catch (error) {
+            console.error('Error getting auth token:', error);
+            return null;
+        }
+    }
+
     private async fetchWithAuth(url: string) {
+        const token = await this.getAuthToken();
+        
+        if (!token) {
+            throw new Error('No authentication token available');
+        }
+
         const response = await fetch(url, {
             headers: {
-                'Authorization': `Bearer ${this.token}`
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
             }
         });
+
+        if (response.status === 401) {
+            // Token might be expired, try to refresh
+            const { data: { session }, error } = await supabase.auth.refreshSession();
+            if (error || !session) {
+                throw new Error('Authentication failed - please log in again');
+            }
+            
+            // Retry with new token
+            const retryResponse = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${session.access_token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            if (!retryResponse.ok) {
+                throw new Error(`HTTP error! status: ${retryResponse.status}`);
+            }
+            
+            return await retryResponse.json();
+        }
+
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
+        
         return await response.json();
     }
 

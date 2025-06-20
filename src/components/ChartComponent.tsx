@@ -35,8 +35,7 @@ const ChartComponent: React.FC<ChartComponentProps> = ({
         period: { multiplier: 5, timespan: 'minute', text: '5m' },
         subIndicators: ['VOL'],
         datafeed: new CustomFastAPIDatafeed(
-          import.meta.env.VITE_API_BASE_URL,
-          import.meta.env.VITE_API_TOKEN
+          import.meta.env.VITE_API_BASE_URL
         )
       });
       console.log('Chart initialized');
