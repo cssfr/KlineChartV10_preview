@@ -31,7 +31,7 @@ export class CustomFastAPIDatafeed implements Datafeed {
         this.cacheConfig = {
             maxEntries: config.maxEntries || 100, // Default max cache entries
             expirationTime: config.expirationTime || 5 * 60 * 1000, // Default 5 minutes
-            persist: config.persist ?? true, // Default to true, if false, cache will not be saved to localStorage
+            persist: config.persist ?? false, // Default to true, if false, cache will not be saved to localStorage
         };
         this.initializeCache();
     }
@@ -108,7 +108,7 @@ export class CustomFastAPIDatafeed implements Datafeed {
         return await response.json();
     }
 
-    async searchSymbols(search?: string): Promise<SymbolInfo[]> {
+    async searchSymbols(_search?: string): Promise<SymbolInfo[]> {
         // Static implementation - extend this if you need dynamic symbol search
         return [{
             ticker: 'ES',
@@ -188,6 +188,6 @@ export class CustomFastAPIDatafeed implements Datafeed {
     }
 
     // No-op implementations for real-time methods as they're not needed
-    subscribe(symbol: SymbolInfo, period: Period, callback: DatafeedSubscribeCallback): void {}
-    unsubscribe(symbol: SymbolInfo, period: Period): void {}
+    subscribe(_symbol: SymbolInfo, _period: Period, _callback: DatafeedSubscribeCallback): void {}
+    unsubscribe(_symbol: SymbolInfo, _period: Period): void {}
 } 

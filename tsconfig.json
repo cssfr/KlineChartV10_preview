@@ -13,6 +13,11 @@
     "isolatedModules": true,
     "noEmit": true,
 
+    /* React and JSX */
+    "jsx": "react-jsx",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
